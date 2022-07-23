@@ -1,0 +1,14 @@
+# syntax=docker/dockerfile:1
+FROM --platform=$TARGETPLATFORM busybox
+
+ARG TARGETPLATFORM
+# ARG BUILDPLATFORM
+
+WORKDIR /root
+COPY target/$TARGETPLATFORM/* .
+
+CMD ["/bin/sh"]
+
+# For image needs shell and vi
+# GitHub Actions CMD, local linux host will support more arch
+# docker buildx build --platform linux/amd64,linux/arm64,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/arm/v7,linux/arm/v6 -t initdc/demo:busybox -f Dockerfile.busybox . --push
