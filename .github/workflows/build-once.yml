@@ -10,9 +10,6 @@ on:
   push:
     tags:
       - 'v*'
-    branches:
-      - '*'
-  pull_request:
 
 jobs:
   build:
