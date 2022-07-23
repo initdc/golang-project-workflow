@@ -24,6 +24,10 @@
 - upload release files
 - build docker images
 
+## More about docker
+
+Check https://github.com/initdc/ssh-proxy-by-caddy-l4
+
 ## License
 
 MPL 2.0
