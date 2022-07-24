@@ -80,4 +80,7 @@ IO.popen(cmd) do |r|
 end
 
 `docker buildx build --platform linux/amd64 -t demo:amd64 . --load`
-`docker run demo:amd64`
+cmd = "docker run demo:amd64"
+IO.popen(cmd) do |r|
+    puts r.readlines
+end
