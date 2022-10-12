@@ -1,7 +1,11 @@
 TARGET_DIR = "target"
 UPLOAD_DIR = "upload"
+
 PROGRAM = "demo"
 VERSION = "v0.0.1"
+BUILD_CMD = "go build -o"
+# used in this way:
+# ENV BUILD_CMD OUTPUT_PATH
 
 # go tool dist list
 OS_ARCH = [
@@ -64,12 +68,12 @@ for target_platform in OS_ARCH do
     if architecture == "arm" 
         for variant in ARM do
             puts "GOOS=#{os} GOARCH=#{architecture} GOARM=#{variant}"
-            `GOOS=#{os} GOARCH=#{architecture} GOARM=#{variant} go build -o #{TARGET_DIR}/#{os}/#{architecture}/v#{variant}/#{PROGRAM}`
+            `GOOS=#{os} GOARCH=#{architecture} GOARM=#{variant} #{BUILD_CMD} #{TARGET_DIR}/#{os}/#{architecture}/v#{variant}/#{PROGRAM}`
             `ln #{TARGET_DIR}/#{os}/#{architecture}/v#{variant}/#{PROGRAM} #{UPLOAD_DIR}/#{PROGRAM}-#{VERSION}-#{os}-#{architecture}-#{variant}`
         end
     else
         puts "GOOS=#{os} GOARCH=#{architecture}"
-        `GOOS=#{os} GOARCH=#{architecture} go build -o #{TARGET_DIR}/#{os}/#{architecture}/#{PROGRAM}`
+        `GOOS=#{os} GOARCH=#{architecture} #{BUILD_CMD} #{TARGET_DIR}/#{os}/#{architecture}/#{PROGRAM}`
         `ln #{TARGET_DIR}/#{os}/#{architecture}/#{PROGRAM} #{UPLOAD_DIR}/#{PROGRAM}-#{VERSION}-#{os}-#{architecture}`
     end
 end
