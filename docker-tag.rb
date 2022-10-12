@@ -2,6 +2,7 @@
 # `docker buildx create --name mycontext1 --driver docker-container --use --bootstrap`
 # `docker run --rm --privileged tonistiigi/binfmt:latest --install all`
 
+REGISTRY = "docker.io"
 DOCKER_USER = "initdc"
 DOCKER_IMAGE = "demo"
 VERSION = "v0.0.1"
@@ -105,20 +106,25 @@ BASE_TAG.each do |base, distro|
         end
     end
     # print "\n"
-    
+
+    registry = ENV['REGISTRY'] || REGISTRY
+    docker_user = ENV['DOCKER_USER'] || DOCKER_USER
+    docker_image = ENV['DOCKER_IMAGE'] || DOCKER_IMAGE
+    imagename = ENV['IMAGENAME'] || "#{docker_user}/#{docker_image}"
     version = ARGV[0] || VERSION
+
     tag = distro.to_s == "" ? version : "#{version}-#{distro}"
     # p tag
 
     if build_tp.length > 0
-        cmd = "docker buildx build --platform #{build_tp.join ","} -t #{DOCKER_USER}/#{DOCKER_IMAGE}:#{tag} -f #{dockerfile} . #{ACTION}"
+        cmd = "docker buildx build --platform #{build_tp.join ","} -t #{registry}/#{imagename}:#{tag} -f #{dockerfile} . #{ACTION}"
         p cmd
         IO.popen(cmd) do |r|
             puts r.readlines
         end
 
         if LATEST != false and LATEST == base.to_s
-            `docker buildx build --platform #{build_tp.join ","} -t #{DOCKER_USER}/#{DOCKER_IMAGE}:latest -f #{dockerfile} . #{ACTION}`
+            `docker buildx build --platform #{build_tp.join ","} -t #{registry}/#{imagename}:latest -f #{dockerfile} . #{ACTION}`
         end
     end
 end
