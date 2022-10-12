@@ -76,6 +76,17 @@ BASE_TAG = {
     "ubuntu": "ub22"
 }
 
+bin_exist = {}
+
+for target_platform in BUILDER_SUPPORT
+    if system("test -f #{TARGET_DIR}/#{target_platform}/*")
+        bin_exist.store target_platform, true
+    else
+        bin_exist.store target_platform, false
+    end
+end
+# p bin_exist
+
 BASE_TAG.each do |base, distro|
     build_tp = []
 
@@ -87,7 +98,7 @@ BASE_TAG.each do |base, distro|
     for tp in os_arch.to_a
         target_platform = tp == "linux/arm64/v8" ? "linux/arm64" : tp
         if BUILDER_SUPPORT.include?(target_platform)
-            if system("test -f #{TARGET_DIR}/#{target_platform}/*")
+            if bin_exist.fetch "#{target_platform}"
                 # print target_platform + ","
                 build_tp.push(target_platform)
             end
@@ -111,4 +122,3 @@ BASE_TAG.each do |base, distro|
         end
     end
 end
-
