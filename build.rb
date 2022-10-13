@@ -1,11 +1,13 @@
-TARGET_DIR = "target"
-UPLOAD_DIR = "upload"
+require "./version"
 
 PROGRAM = "demo"
-VERSION = "v0.0.1"
+# VERSION = "v0.0.1"
 BUILD_CMD = "go build -o"
 # used in this way:
 # ENV BUILD_CMD OUTPUT_PATH
+
+TARGET_DIR = "target"
+UPLOAD_DIR = "upload"
 
 # go tool dist list
 OS_ARCH = [
@@ -64,27 +66,58 @@ for target_platform in OS_ARCH do
     tp_array = target_platform.split('/')
     os = tp_array[0]
     architecture = tp_array[1]
+    version = ARGV[0] || VERSION
 
     if architecture == "arm" 
         for variant in ARM do
             puts "GOOS=#{os} GOARCH=#{architecture} GOARM=#{variant}"
             `GOOS=#{os} GOARCH=#{architecture} GOARM=#{variant} #{BUILD_CMD} #{TARGET_DIR}/#{os}/#{architecture}/v#{variant}/#{PROGRAM}`
-            `ln #{TARGET_DIR}/#{os}/#{architecture}/v#{variant}/#{PROGRAM} #{UPLOAD_DIR}/#{PROGRAM}-#{VERSION}-#{os}-#{architecture}-#{variant}`
+            `ln #{TARGET_DIR}/#{os}/#{architecture}/v#{variant}/#{PROGRAM} #{UPLOAD_DIR}/#{PROGRAM}-#{version}-#{os}-#{architecture}-#{variant}`
         end
     else
         puts "GOOS=#{os} GOARCH=#{architecture}"
         `GOOS=#{os} GOARCH=#{architecture} #{BUILD_CMD} #{TARGET_DIR}/#{os}/#{architecture}/#{PROGRAM}`
-        `ln #{TARGET_DIR}/#{os}/#{architecture}/#{PROGRAM} #{UPLOAD_DIR}/#{PROGRAM}-#{VERSION}-#{os}-#{architecture}`
+        `ln #{TARGET_DIR}/#{os}/#{architecture}/#{PROGRAM} #{UPLOAD_DIR}/#{PROGRAM}-#{version}-#{os}-#{architecture}`
     end
 end
 
-cmd = "file #{UPLOAD_DIR}/**"
+# cmd = "file #{UPLOAD_DIR}/**"
+# IO.popen(cmd) do |r|
+#     puts r.readlines
+# end
+
+file = "#{UPLOAD_DIR}/BINARYS"
+IO.write(file, "")
+
+cmd = "tree #{TARGET_DIR}"
 IO.popen(cmd) do |r|
-    puts r.readlines
+    rd = r.readlines
+    puts rd
+
+    for o in rd
+        IO.write(file, o, mode: "a")
+    end
 end
 
-`docker buildx build --platform linux/amd64 -t demo:amd64 . --load`
-cmd = "docker run demo:amd64"
-IO.popen(cmd) do |r|
-    puts r.readlines
+Dir.chdir UPLOAD_DIR do
+    file = "SHA256SUM"
+    IO.write(file, "")
+
+    cmd = "sha256sum *"
+    IO.popen(cmd) do |r|
+        rd = r.readlines
+
+        for o in rd
+            if ! o.include? "SHA256SUM" and ! o.include? "BINARYS"
+                print o
+                IO.write(file, o, mode: "a")
+            end
+        end
+    end
 end
+
+# `docker buildx build --platform linux/amd64 -t demo:amd64 . --load`
+# cmd = "docker run demo:amd64"
+# IO.popen(cmd) do |r|
+#     puts r.readlines
+# end

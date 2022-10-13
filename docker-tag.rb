@@ -1,11 +1,12 @@
 # # on local machine, you may need 
 # `docker buildx create --name mycontext1 --driver docker-container --use --bootstrap`
 # `docker run --rm --privileged tonistiigi/binfmt:latest --install all`
+require "./version"
 
 REGISTRY = "docker.io"
 DOCKER_USER = "initdc"
 DOCKER_IMAGE = "demo"
-VERSION = "v0.0.1"
+# VERSION = "v0.0.1"
 LATEST = "scratch"
 # the base of docker `FROM scratch`, if not, set: { false | "" }
 ACTION = "--push"
