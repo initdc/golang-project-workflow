@@ -8,15 +8,26 @@
 
     - go
     - ruby
-    - file
+    - tree
+    - sha256sum
     - docker
 
 2. build 
 
     > edit config and build CMD as you need
 
-    `ruby build.rb`
-
+    ```
+    # build binarys
+    ruby build.rb
+    ruby build.rb v0.0.2
+    ruby build.rb fix-bug-001
+    
+    # build docker images
+    ruby docker-tag.rb
+    ruby docker-tag.rb v0.0.2
+    ruby docker-tag.rb dev
+    ruby docker-tag.rb v$(TZ=Asia/Shanghai date +%Y.%m.%d)
+    ```
 
 ## GitHub actions
 
