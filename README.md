@@ -22,6 +22,9 @@
     ruby build.rb --run-test
     ruby build.rb v0.0.2 
     ruby build.rb less ## build bin for LESS_OS_ARCH
+
+    echo > version.rb 'VERSION = "fix-bug-001"'
+    ruby build.rb test --run-test
     
     # build docker images
     ruby docker-tag.rb
