@@ -1,0 +1,29 @@
+name: Merge or Pull requests
+
+env:
+  GO_VERSION: '1.19'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'dev'
+      - 'next'
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set go version  
+        uses: actions/setup-go@v2
+        with:
+          go-version: '${{ env.GO_VERSION }}'   
+      - name: Build Artifact
+        run: ruby build.rb test --run-test
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          path: "upload/*"
