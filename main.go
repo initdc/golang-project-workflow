@@ -1,10 +1,16 @@
 package main
 
-import "fmt"
-import "runtime"
+import (
+	"fmt"
+	"runtime"
+)
+
+func hello() string {
+	return fmt.Sprintf("OS: %s\n", runtime.GOOS) +
+		fmt.Sprintf("Architecture: %s\n", runtime.GOARCH) +
+		fmt.Sprintf("Version: %s\n", runtime.Version())
+}
 
 func main() {
-    fmt.Printf("OS: %s\n", runtime.GOOS)
-    fmt.Printf("Architecture: %s\n", runtime.GOARCH)
-    fmt.Printf("Version: %s\n", runtime.Version())
+	fmt.Print(hello())
 }

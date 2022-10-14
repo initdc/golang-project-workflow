@@ -5,9 +5,14 @@ PROGRAM = "demo"
 BUILD_CMD = "go build -o"
 # used in this way:
 # ENV BUILD_CMD OUTPUT_PATH
+TEST_CMD = "go test"
 
 TARGET_DIR = "target"
 UPLOAD_DIR = "upload"
+
+def clean
+    `rm -rf #{TARGET_DIR} #{UPLOAD_DIR}`
+end
 
 # go tool dist list
 OS_ARCH = [
@@ -60,22 +65,78 @@ OS_ARCH = [
 
 ARM = ["5", "6", "7"]
 
+TEST_OS_ARCH = [
+    "darwin/amd64",
+    "darwin/arm64",
+    "linux/386",
+    "linux/amd64",
+    "linux/arm",
+    "linux/arm64",
+    "linux/riscv64",
+    "windows/386",
+    "windows/amd64",
+    "windows/arm64"
+]
+
+LESS_OS_ARCH = [
+    "linux/amd64",
+    "linux/arm64"
+]
+
+version = ARGV[0][0] == "v" ? ARGV[0] : VERSION
+test_bin = ARGV[0] == "test" || false
+less_bin = ARGV[0] == "less" || false
+
+run_test = ARGV.include? "--run-test" || false 
+catch_error = ARGV.include? "--catch-error" || false
+
+os_arch = OS_ARCH
+os_arch = TEST_OS_ARCH if test_bin
+os_arch = LESS_OS_ARCH if less_bin
+
+# on local machine, you may re-run this script
+if test_bin || less_bin
+    clean
+end
 `mkdir -p #{TARGET_DIR} #{UPLOAD_DIR}`
 
-for target_platform in OS_ARCH do
+for target_platform in os_arch do
     tp_array = target_platform.split('/')
     os = tp_array[0]
     architecture = tp_array[1]
-    version = ARGV[0] || VERSION
 
     if architecture == "arm" 
         for variant in ARM do
             puts "GOOS=#{os} GOARCH=#{architecture} GOARM=#{variant}"
+
+            if run_test
+                test_cmd = "GOOS=#{os} GOARCH=#{architecture} GOARM=#{variant} #{TEST_CMD}"
+                puts test_cmd
+                test_result = system test_cmd
+                if catch_error and !test_result
+                    return
+                end
+            else
+                puts "skip testing for #{os}/#{architecture}/#{variant}"
+            end
+
             `GOOS=#{os} GOARCH=#{architecture} GOARM=#{variant} #{BUILD_CMD} #{TARGET_DIR}/#{os}/#{architecture}/v#{variant}/#{PROGRAM}`
             `ln #{TARGET_DIR}/#{os}/#{architecture}/v#{variant}/#{PROGRAM} #{UPLOAD_DIR}/#{PROGRAM}-#{version}-#{os}-#{architecture}-#{variant}`
         end
     else
         puts "GOOS=#{os} GOARCH=#{architecture}"
+
+        if run_test
+            test_cmd = "GOOS=#{os} GOARCH=#{architecture} #{TEST_CMD}"
+            puts test_cmd
+            test_result = system test_cmd
+            if catch_error and !test_result
+                return
+            end
+        else
+            puts "skip testing for #{os}/#{architecture}"
+        end
+
         `GOOS=#{os} GOARCH=#{architecture} #{BUILD_CMD} #{TARGET_DIR}/#{os}/#{architecture}/#{PROGRAM}`
         `ln #{TARGET_DIR}/#{os}/#{architecture}/#{PROGRAM} #{UPLOAD_DIR}/#{PROGRAM}-#{version}-#{os}-#{architecture}`
     end
