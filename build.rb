@@ -115,9 +115,9 @@ for target_platform in os_arch do
                 test_result = system test_cmd
                 if catch_error and !test_result
                     return
+                else
+                    puts "skip testing for #{os}/#{architecture}/#{variant}"
                 end
-            else
-                puts "skip testing for #{os}/#{architecture}/#{variant}"
             end
 
             `GOOS=#{os} GOARCH=#{architecture} GOARM=#{variant} #{BUILD_CMD} #{TARGET_DIR}/#{os}/#{architecture}/v#{variant}/#{PROGRAM}`
@@ -132,9 +132,9 @@ for target_platform in os_arch do
             test_result = system test_cmd
             if catch_error and !test_result
                 return
-            end
-        else
-            puts "skip testing for #{os}/#{architecture}"
+            else
+                puts "skip testing for #{os}/#{architecture}"
+            end            
         end
 
         `GOOS=#{os} GOARCH=#{architecture} #{BUILD_CMD} #{TARGET_DIR}/#{os}/#{architecture}/#{PROGRAM}`
