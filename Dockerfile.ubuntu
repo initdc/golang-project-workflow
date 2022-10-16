@@ -6,11 +6,11 @@ ARG TARGETPLATFORM
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN set -e \
-    && apt-get update \
-    && apt-get install --no-install-recommends -y ca-certificates \
-    && apt-get autoremove --purge \
-    && rm -rf /var/lib/apt/lists/*
+# RUN set -e \
+#     && apt-get update \
+#     && apt-get install --no-install-recommends -y ca-certificates \
+#     && apt-get autoremove --purge \
+#     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /root
 COPY target/$TARGETPLATFORM/* .

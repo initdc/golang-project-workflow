@@ -6,6 +6,7 @@ require "./version"
 REGISTRY = "docker.io"
 DOCKER_USER = "initdc"
 DOCKER_IMAGE = "demo"
+BINARY = "demo"
 # VERSION = "v0.0.1"
 LATEST = "scratch"
 # the base of docker `FROM scratch`, if not, set: { false | "" }
@@ -73,9 +74,9 @@ IMAGE_SUPPORT = {
 # add base as you need for following build
 BASE_TAG = {
     "scratch": "",
-    "alpine": "alp",
+    "alpine": "alpine",
     "busybox": "busybox",
-    "ubuntu": "ub22"
+    "ubuntu": "ubuntu"
 }
 
 registry = ENV['REGISTRY'] || REGISTRY
@@ -87,7 +88,7 @@ version = ARGV[0] || VERSION
 bin_exist = {}
 
 for target_platform in BUILDER_SUPPORT
-    if system("test -f #{TARGET_DIR}/#{target_platform}/*")
+    if system("test -f #{TARGET_DIR}/#{target_platform}/#{BINARY}")
         bin_exist.store target_platform, true
     else
         bin_exist.store target_platform, false
