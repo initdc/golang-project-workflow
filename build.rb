@@ -83,6 +83,33 @@ LESS_OS_ARCH = [
     "linux/arm64"
 ]
 
+QEMU_BINFMT = [
+    "qemu-user",
+]
+
+ARCH_EXEC = {
+    "386": "",
+    "amd64": "",
+    "arm": "qemu-arm",
+    "arm64": "qemu-aarch64",
+    "mips": "qemu-mips",
+    "mips64": "qemu-mips64",
+    "mips64le": "qemu-mips64el",
+    "mipsle": "qemu-mipsel",
+    "ppc64": "qemu-ppc64",
+    "ppc64le": "qemu-ppc64le",
+    "riscv64": "qemu-riscv64",
+    "s390x": "qemu-s390x"
+}
+
+def run_install
+    cmd = "sudo apt-get install -y #{QEMU_BINFMT.join(" ")}"
+    puts cmd
+    IO.popen(cmd) do |r|
+        puts r.readlines
+    end
+end
+
 EMPTY = ["", " ", "  "]
 version = VERSION
 # version = ARGV[0][0] == "v" ? ARGV[0] : VERSION
@@ -107,6 +134,12 @@ less_bin = ARGV[0] == "less" || false
 
 run_test = ARGV.include? "--run-test" || false 
 catch_error = ARGV.include? "--catch-error" || false
+install_qemu = ARGV.include? "--install-qemu" || false
+
+if install_qemu
+    run_install
+    return
+end
 
 os_arch = OS_ARCH
 os_arch = TEST_OS_ARCH if test_bin
@@ -129,15 +162,18 @@ for target_platform in os_arch do
         for variant in ARM do
             puts "GOOS=#{os} GOARCH=#{architecture} GOARM=#{variant}"
 
-            if run_test
-                test_cmd = "GOOS=#{os} GOARCH=#{architecture} GOARM=#{variant} #{TEST_CMD}"
+            if run_test and os == "linux"
+                qemu_runner = ARCH_EXEC[:"#{architecture}"]
+                exec_arg = qemu_runner != "" ? "--exec #{qemu_runner}" : ""
+
+                test_cmd = "GOOS=#{os} GOARCH=#{architecture} GOARM=#{variant} #{TEST_CMD} #{exec_arg}"
                 puts test_cmd
                 test_result = system test_cmd
                 if catch_error and !test_result
                     return
-                else
-                    puts "skip testing for #{os}/#{architecture}/#{variant}"
                 end
+            elsif run_test
+                puts "skip testing for #{os}/#{architecture}/v#{variant}"
             end
 
             upload_bin = os != "windows" ? "#{PROGRAM}-#{version}-#{os}-#{architecture}-#{variant}" : "#{PROGRAM}-#{version}-#{os}-#{architecture}-#{variant}.exe"
@@ -148,15 +184,18 @@ for target_platform in os_arch do
     else
         puts "GOOS=#{os} GOARCH=#{architecture}"
 
-        if run_test
-            test_cmd = "GOOS=#{os} GOARCH=#{architecture} #{TEST_CMD}"
+        if run_test and os == "linux"
+            qemu_runner = ARCH_EXEC[:"#{architecture}"]
+            exec_arg = qemu_runner != "" ? "--exec #{qemu_runner}" : ""
+
+            test_cmd = "GOOS=#{os} GOARCH=#{architecture} #{TEST_CMD} #{exec_arg}"
             puts test_cmd
             test_result = system test_cmd
             if catch_error and !test_result
                 return
-            else
-                puts "skip testing for #{os}/#{architecture}"
-            end            
+            end
+        elsif run_test
+            puts "skip testing for #{os}/#{architecture}"        
         end
 
         upload_bin = os != "windows" ? "#{PROGRAM}-#{version}-#{os}-#{architecture}" : "#{PROGRAM}-#{version}-#{os}-#{architecture}.exe"

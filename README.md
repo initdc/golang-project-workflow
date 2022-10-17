@@ -19,6 +19,7 @@
     ```
     # build binarys
     ruby build.rb
+    ruby build.rb --install-qemu ## if you want run cross-arch testing
     ruby build.rb --run-test
     ruby build.rb v0.0.2 
     ruby build.rb less ## build bin for LESS_OS_ARCH
