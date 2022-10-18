@@ -1,4 +1,5 @@
 require "./version"
+require "./get-version"
 
 PROGRAM = "demo"
 # VERSION = "v0.0.1"
@@ -110,24 +111,7 @@ def run_install
     end
 end
 
-EMPTY = ["", " ", "  "]
-version = VERSION
-# version = ARGV[0][0] == "v" ? ARGV[0] : VERSION
-if not ARGV.empty?
-    if ARGV[0].start_with? "-"
-        puts "version fallback to: #{version}"
-    elsif EMPTY.include? ARGV[0]
-        print "version not valid: "
-        p ARGV[0]
-        puts "version fallback to: #{version}"
-    else
-        version = ARGV[0]
-        puts "version = #{version}, get from ARGV[0]"
-    end
-else
-    puts "ARGV is empty"
-    puts "version = #{version}, by default"
-end
+version = get_version ARGV, 0, VERSION
 
 test_bin = ARGV[0] == "test" || false
 less_bin = ARGV[0] == "less" || false
