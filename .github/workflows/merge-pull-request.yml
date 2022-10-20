@@ -11,6 +11,10 @@ on:
       - 'next'
   pull_request:
 
+concurrency: 
+  group: ${{ github.sha }}
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
