@@ -1,5 +1,6 @@
 require "./version"
 require "./get-version"
+require "./get-go-targets"
 
 PROGRAM = "demo"
 # VERSION = "v0.0.1"
@@ -125,7 +126,7 @@ if install_qemu
     return
 end
 
-os_arch = OS_ARCH
+os_arch = get_go_targets || OS_ARCH
 os_arch = TEST_OS_ARCH if test_bin
 os_arch = LESS_OS_ARCH if less_bin
 
