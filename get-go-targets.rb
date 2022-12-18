@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 def get_go_targets
     cmd = "go tool dist list"
     IO.popen(cmd) do |r|
@@ -5,14 +7,12 @@ def get_go_targets
         return nil if lines.empty?
 
         targets = []
-        for line in lines
+        lines.each do |line|
             target = line.delete_suffix "\n"
             targets.push target
         end
         return targets
     end
-rescue
-    return nil        
 end
 
 if __FILE__ == $0
