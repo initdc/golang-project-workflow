@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "libexec"
 require "./version"
 require "./get-version"
 require "./get-go-targets"
@@ -14,8 +15,21 @@ TEST_CMD = "go test"
 TARGET_DIR = "target"
 UPLOAD_DIR = "upload"
 
+# Error code
+E        = 1
+Eclean   = 2
+Einstall = 3
+
+Ebuild   = 11
+Etest    = 12
+Elink    = 13
+
+Edbuild  = 21
+Edtag    = 22
+Edpush   = 22
+
 def clean
-    `rm -rf #{TARGET_DIR} #{UPLOAD_DIR}`
+    Libexec.code("rm -rf #{TARGET_DIR} #{UPLOAD_DIR}", Eclean)
 end
 
 # go tool dist list
@@ -104,7 +118,7 @@ ARCH_EXEC = {
 def run_install
     cmd = "sudo apt-get install -y #{QEMU_BINFMT.join(" ")}"
     puts cmd
-    IO.popen(cmd) { |r| puts r.readlines }
+    Libexec.code(cmd, Einstall)
 end
 
 version = get_version ARGV, 0, VERSION
@@ -150,7 +164,7 @@ os_arch.each do |target_platform|
                     "GOOS=#{os} GOARCH=#{architecture} GOARM=#{variant} #{TEST_CMD} #{exec_arg}"
                 puts test_cmd
                 test_result = system test_cmd
-                exit 1 if catch_error and !test_result
+                exit Etest if catch_error and !test_result
             elsif run_test
                 puts "skip testing for #{os}/#{architecture}/v#{variant}"
             end
@@ -163,8 +177,11 @@ os_arch.each do |target_platform|
                 end
 
             dir = "#{TARGET_DIR}/#{os}/#{architecture}/v#{variant}"
-            `GOOS=#{os} GOARCH=#{architecture} GOARM=#{variant} #{BUILD_CMD} #{dir}/#{program_bin}`
-            `ln #{dir}/#{program_bin} #{UPLOAD_DIR}/#{upload_bin}`
+            Libexec.code(
+                "GOOS=#{os} GOARCH=#{architecture} GOARM=#{variant} #{BUILD_CMD} #{dir}/#{program_bin}",
+                Ebuild
+            )
+            Libexec.code("ln #{dir}/#{program_bin} #{UPLOAD_DIR}/#{upload_bin}", Elink)
         end
     else
         puts "GOOS=#{os} GOARCH=#{architecture}"
@@ -177,7 +194,7 @@ os_arch.each do |target_platform|
                 "GOOS=#{os} GOARCH=#{architecture} #{TEST_CMD} #{exec_arg}"
             puts test_cmd
             test_result = system test_cmd
-            exit 1 if catch_error and !test_result
+            exit Etest if catch_error and !test_result
         elsif run_test
             puts "skip testing for #{os}/#{architecture}"
         end
@@ -188,8 +205,14 @@ os_arch.each do |target_platform|
                          "#{PROGRAM}-#{version}-#{os}-#{architecture}.exe"
                      end
 
-        `GOOS=#{os} GOARCH=#{architecture} #{BUILD_CMD} #{TARGET_DIR}/#{os}/#{architecture}/#{program_bin}`
-        `ln #{TARGET_DIR}/#{os}/#{architecture}/#{program_bin} #{UPLOAD_DIR}/#{upload_bin}`
+        Libexec.code(
+            "GOOS=#{os} GOARCH=#{architecture} #{BUILD_CMD} #{TARGET_DIR}/#{os}/#{architecture}/#{program_bin}",
+            Ebuild
+        )
+        Libexec.code(
+            "ln #{TARGET_DIR}/#{os}/#{architecture}/#{program_bin} #{UPLOAD_DIR}/#{upload_bin}",
+            Elink
+        )
     end
 end
 
