@@ -27,6 +27,7 @@ jobs:
           go-version: '${{ env.GO_VERSION }}'   
       - name: Build Artifact
         run: |
+          sudo gem install libexec
           ruby build.rb --install-qemu
           ruby build.rb test --run-test
       - name: Upload Artifact
